@@ -1,1 +1,15 @@
+DHT11和DHT12同为温度湿度传感器的驱动，区别在于使用的硬件是DHT11和DHT12
 
+LightIntensity是光传感器的驱动，硬件是GY-30或GY-301
+
+Pump是水泵的控制代码，实际为控制继电器通断
+
+Waterlevel是水位传感器驱动
+
+motor是步进电机驱动
+
+rainfall是雨滴传感器驱动
+
+moisture是土壤湿度传感器驱动
+
+security是红外传感器驱动
