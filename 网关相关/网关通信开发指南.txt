@@ -1,0 +1,58 @@
+﻿网关通信开发指南
+首先，连接mqtt服务器，账号为admin，密码为password
+订阅主题iot，发送数据时也将数据发送进主题iot里
+
+数据都是json格式的。
+target表示数据目标，分为server和gateway。
+因为mqtt协议的主题是订阅式的，所以自己发送一条消息，自己也会收到相同的消息。
+根据target的值，只选择与自己相关的消息。
+服务器只会处理target为server的数据，网关同理。
+msg表示消息类型或命令，data表示与命令相关的数据.
+服务器可发送的命令有以下几条:
+1.{"target": "gateway", "msg": "check_dev"}
+	检查终端设备是否正确回应网关。
+	样例返回数据：
+	{"data": "ab", "target": "server", "msg": "device_dect"}
+	data表示在线的设备，收到ab则表示ab都在线，收到a则表示只有a在线，若是空字符串，则表示都不在线
+	超时时间50秒。
+	此操作会自动执行，可以用2来更改每次操作的等待时间
+2.{"target": "gateway", "msg": "check_interval", "data":600}
+	设置网关自动检测终端的时间间隔，data表示每次检查间隔的时间。以秒为单位
+	设置完成后将在下一次自动终端检测完成后生效。
+	无返回数据
+	现在没有实现
+3.{"target": "gateway", "msg": "powerSave"}
+	将终端的lora模块的工作模式设为省电模式，此模式下模块不能接收任何数据，需要唤醒。
+	无返回数据
+	现在没有实现
+4.{"target": "gateway", "msg": "awake"}
+	唤醒终端的lora模块
+	无返回数据
+	现在没有实现
+5.{"target": "gateway", "msg": "getinfo"}
+	获取终端所有传感器的信息
+	样例返回数据:
+	{"msg": "devinfo", "data": [30, 89, 12, 1, 2, 91, 5, 6, 7, 1, 92], "target": "server"}
+	data为一个有10个数据的列表，数据分别为
+	温度0 湿度1 光照强度2 人体红外3 雨滴4 板a电量5 土壤湿度6 水位7 盐碱性8 水泵状态9 板b电量10
+	理论完成时间在7秒左右。
+	有2个终端，每个终端已设置超时20秒，若终端a超时，则返回
+	{"msg": "error_a", "data": -1, "target": "server"}，
+	此时不会再检测终端b，如果数据解析失败，则data为解析失败的数据。
+	同理，b超时时返回
+	{"msg": "error_b", "data": -1, "target": "server"}。
+6.{"target": "gateway", "msg": "closep"}
+	关闭水泵
+	若成功，则返回{"target": "server", "msg": "closep"}
+	若失败，则返回{"msg": "error_b", "data": -1, "target": "server"}
+7.{"target": "gateway", "msg": "openp"}
+	打开水泵
+	若成功，则返回{"target": "server", "msg": "closep"}
+	若失败，则返回{"msg": "error_b", "data": -1, "target": "server"}
+8.{"target": "gateway", "msg": "getque"}
+	获取队列里的操作数量。
+	以上所有操作，除了2，都只能同时处理一个操作。所以收到新操作时，网关会将操作放进队列里，再读取处理。
+	可以使用此命令来估算返回时间。
+	样例返回数据：
+	{"data": 0, "target": "server", "msg": "quesize"}
+	data表示现在队列里的操作数量。此命令会立即返回。
