@@ -13,3 +13,5 @@ rainfall是雨滴传感器驱动
 moisture是土壤湿度传感器驱动
 
 security是红外传感器驱动
+
+Lora2是LoRa模块的驱动
